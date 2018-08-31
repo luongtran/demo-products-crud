@@ -126,4 +126,11 @@ class categoryAPIController extends AppBaseController
 
         return $this->sendResponse($id, 'Category deleted successfully');
     }
+
+    public function getCategory(){
+        $id = 0 ;
+        $a = $this->categoryRepository->findWhere(['parent_id' => 0]);
+        dd($a);
+
+    }
 }

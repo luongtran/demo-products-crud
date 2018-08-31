@@ -41,7 +41,6 @@ class productAPIController extends AppBaseController
         $this->productRepository->pushCriteria(new RequestCriteria($request));
         $this->productRepository->pushCriteria(new LimitOffsetCriteria($request));
         $products = $this->productRepository->all();
-
         return $this->sendResponse($products->toArray(), 'Products retrieved successfully');
     }
 
@@ -56,8 +55,18 @@ class productAPIController extends AppBaseController
     public function store(CreateproductAPIRequest $request)
     {
         $input = $request->all();
-
-        $products = $this->productRepository->create($input);
+        $product = [];
+        foreach($input['attributes'] as $key => $value) {
+            $product['product_id'] = $this->getProductID();
+            $product['name'] = $request->name;
+            $product['category_id'] = $request->category_id;
+            $product['website_id'] = $request->website_id;
+            $product['attribute'] = $value['attribute'];
+            $product['price'] = $value['price'];
+            $product['stock'] = $value['stock'];
+            $product['weight'] = $value['weight'];
+            $products = $this->productRepository->create($product);     
+        }
 
         return $this->sendResponse($products->toArray(), 'Product saved successfully');
     }
@@ -94,7 +103,6 @@ class productAPIController extends AppBaseController
     public function update($id, UpdateproductAPIRequest $request)
     {
         $input = $request->all();
-
         /** @var product $product */
         $product = $this->productRepository->findWithoutFail($id);
 
@@ -129,22 +137,6 @@ class productAPIController extends AppBaseController
         return $this->sendResponse($id, 'Product deleted successfully');
     }
 
-    public function searchId(Request $request)
-    {
-        
-        $this->productRepository->pushCriteria(new SearchProductIdCriteria($request->id));
-        $products = $this->productRepository->all();
-        return $this->sendResponse($products->toArray(), 'Employee search successfully');
-    }
-
-    public function searchName(Request $request)
-    {
-        
-        $this->productRepository->pushCriteria(new SearchProductNameCriteria($request->name));
-        $products = $this->productRepository->all();
-        return $this->sendResponse($products->toArray(), 'Employee search successfully');
-    }
-
     public function fullSearch(Request $request)
     {
         $this->productRepository->pushCriteria(new SearchProductIdCriteria($request->id));
@@ -152,4 +144,18 @@ class productAPIController extends AppBaseController
         $products = $this->productRepository->all();
         return $this->sendResponse($products->toArray(), 'Employee search successfully');
     }
+
+    public function getProductID(){
+
+        $count = count($this->productRepository->all());
+        $dem = $count+1;
+        if($dem < 100) {
+            return "KM00".$dem;
+        }
+        elseif ($dem < 1000) {
+            return "KM0".$dem;
+        }
+        return "KM".$dem;
+    }
+
 }

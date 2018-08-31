@@ -13,8 +13,8 @@ import indexProduct from './components/products/index.vue';
 import router from './components/routers/routers.js';
 import Vue from 'vue';
 import VeeValidate from 'vee-validate';
-
 Vue.use(VeeValidate);
+Vue.prototype.$event = new Vue();
 
 
 

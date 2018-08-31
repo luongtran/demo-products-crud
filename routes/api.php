@@ -19,12 +19,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['namespace' => 'API'], function () {
 
+Route::get('categories/abc', 'categoryAPIController@getCategory');
+
 Route::resource('categories', 'categoryAPIController');
 
 Route::resource('websites', 'websiteAPIController');
 
-Route::get('products/search/id', 'productAPIController@searchId');
-Route::get('products/search/name', 'productAPIController@searchName');
+// Route::get('products/search/id', 'productAPIController@searchId');
+// Route::get('products/search/name', 'productAPIController@searchName');
 Route::get('products/search', 'productAPIController@fullSearch');
 Route::resource('products', 'productAPIController');
 
