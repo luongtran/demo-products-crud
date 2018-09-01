@@ -28,6 +28,7 @@ Route::resource('websites', 'websiteAPIController');
 // Route::get('products/search/id', 'productAPIController@searchId');
 // Route::get('products/search/name', 'productAPIController@searchName');
 Route::get('products/search', 'productAPIController@fullSearch');
+Route::get('products/show','productAPIController@showMoreProduct');
 Route::resource('products', 'productAPIController');
 
 

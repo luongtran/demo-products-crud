@@ -14,3 +14,7 @@
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('show/id','API\productAPIController@getProductID');
+Route::get('show/{productId}','API\productAPIController@showMoreProduct');
+
+

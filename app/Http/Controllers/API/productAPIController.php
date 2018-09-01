@@ -40,7 +40,7 @@ class productAPIController extends AppBaseController
     {
         $this->productRepository->pushCriteria(new RequestCriteria($request));
         $this->productRepository->pushCriteria(new LimitOffsetCriteria($request));
-        $products = $this->productRepository->all();
+        $products = $this->productRepository->orderBy('product_id', 'asc')->all();
         return $this->sendResponse($products->toArray(), 'Products retrieved successfully');
     }
 
@@ -55,19 +55,19 @@ class productAPIController extends AppBaseController
     public function store(CreateproductAPIRequest $request)
     {
         $input = $request->all();
+        $productId = $this->getProductID();
         $product = [];
         foreach($input['attributes'] as $key => $value) {
-            $product['product_id'] = $this->getProductID();
+            $product['product_id'] = $productId;
             $product['name'] = $request->name;
-            $product['category_id'] = $request->category_id;
-            $product['website_id'] = $request->website_id;
+            $product['category_id'] = $request->categoryId;
+            $product['website_id'] = $request->websiteId;
             $product['attribute'] = $value['attribute'];
             $product['price'] = $value['price'];
             $product['stock'] = $value['stock'];
             $product['weight'] = $value['weight'];
-            $products = $this->productRepository->create($product);     
+            $products = $this->productRepository->create($product);
         }
-
         return $this->sendResponse($products->toArray(), 'Product saved successfully');
     }
 
@@ -103,15 +103,31 @@ class productAPIController extends AppBaseController
     public function update($id, UpdateproductAPIRequest $request)
     {
         $input = $request->all();
+        //dd($input);
         /** @var product $product */
-        $product = $this->productRepository->findWithoutFail($id);
+        // $product = $this->productRepository->findWithoutFail($id);
 
-        if (empty($product)) {
-            return $this->sendError('Product not found');
+        // if (empty($product)) {
+        //     return $this->sendError('Product not found');
+        // }
+        foreach($input['attributes'] as $key => $value) {
+            $product = array(
+                'name'          => $request->name,
+                'category_id'   => $request->categoryId,
+                'website_id'    => $request->websiteId,
+                'attribute'     => $value['attribute'], 
+                'price'         => $value['price'],
+                'stock'         => $value['stock'],
+                'weight'        => $value['weight']
+            );
+            if(!isset($value['id'])) {
+                $product['product_id'] = $request->productId;
+                $product = $this->productRepository->create($product);
+            } else {
+                $product = $this->productRepository->update($product, $value['id']);  
+            }      
         }
-
-        $product = $this->productRepository->update($input, $id);
-
+        //dd($product);
         return $this->sendResponse($product->toArray(), 'product updated successfully');
     }
 
@@ -142,20 +158,31 @@ class productAPIController extends AppBaseController
         $this->productRepository->pushCriteria(new SearchProductIdCriteria($request->id));
         $this->productRepository->pushCriteria(new SearchProductNameCriteria($request->name)); 
         $products = $this->productRepository->all();
-        return $this->sendResponse($products->toArray(), 'Employee search successfully');
+        return $this->sendResponse($products->toArray(), 'Product search successfully');
     }
 
-    public function getProductID(){
+    public function getProductID()
+    {
+        $product = $this->productRepository->all()->last()->toArray();
+        $key = substr($product['product_id'], 2, strlen($product['product_id']));
+        $count = (int)($key + 1); 
+        if((int)$key < 9) {
+            return "KM000".$count;
+        }
+        if((int)$key < 99) {
+            return "KM00".$count;
+        }
+        if ((int)$key < 999) {
+            return "KM0".$count;
+        }
+        return "KM".$count;
+    }
 
-        $count = count($this->productRepository->all());
-        $dem = $count+1;
-        if($dem < 100) {
-            return "KM00".$dem;
-        }
-        elseif ($dem < 1000) {
-            return "KM0".$dem;
-        }
-        return "KM".$dem;
+    public function showMoreProduct(Request $request)
+    { 
+        $data = $this->productRepository->findWithoutFail($request->id)->toArray();
+        $product = $this->productRepository->findWhere(['product_id' => $data['product_id']]);
+        return $this->sendResponse($product->toArray(), 'Product show successfully');
     }
 
 }
